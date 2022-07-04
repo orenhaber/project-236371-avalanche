@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: worker-envars-fieldref-statefulset
+  labels:
+    app: worker-yaml
+spec:
+  serviceName: worker
+  podManagementPolicy: Parallel
+  replicas: 100
+  selector:
+    matchLabels:
+      app: worker-yaml
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: worker-yaml
+      annotations:
+        iam.amazonaws.com/role: arn:aws:iam::944374151030:role/AmazonEKSFargatePodExecutionRole
+    spec:
+      containers:
+        - name: tech-project-worker-image-z26m4
+          #image: on-register-public
+          image: public.ecr.aws/o5m1f5q7/on-register-public
+          command:
+            - /bin/sh
+            - '-c'
+          args:
+            - >-
+              make;
+              printenv MY_NODE_NAME MY_POD_NAME
+              MY_POD_NAMESPACE; printenv MY_POD_IP MY_POD_SERVICE_ACCOUNT;
+              python listener.py;
+              sleep 1000;
+          env:
+            - name: MY_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+            - name: MY_POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.serviceAccountName
+            - name: NUMBER_OF_ROUNDS
+              value: "2000"
+            - name: K_SAMPLE_SIZE
+              value: "10"
+            - name: ALPHA
+              value: "0.8"
+            - name: BETA
+              value: "20"
+            - name : REPLICAS
+              value: "100"
+            - name: AWS_ACCESS_KEY
+              value: ""
+            - name: AWS_SECRET_KEY
+              value: ""
+            - name: AWS_REGION
+              value: "eu-central-1"
+            - name: BATCH_SIZE
+              value: "5"
+            - name: KILL
+              value: "8"
+          resources:
+            limits:
+              memory: 8000Mi
+              cpu: "4"
+            requests:
+              memory:  8000Mi
+              cpu: "4"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 2
+      dnsPolicy: ClusterFirst
+      securityContext: { }
+      schedulerName: default-scheduler
+  revisionHistoryLimit: 10

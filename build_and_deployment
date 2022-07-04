@@ -1,0 +1,5 @@
+docker compose build worker-image
+aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o5m1f5q7
+docker tag tech-project_worker-image:latest public.ecr.aws/o5m1f5q7/on-register-public:latest
+docker push public.ecr.aws/o5m1f5q7/on-register-public:latest
+kubectl apply -f worker-deployment.yaml
