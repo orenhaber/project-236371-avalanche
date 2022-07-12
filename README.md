@@ -1,9 +1,9 @@
 This is a project in 236371 - Implementing Avalanche
 Prerequisite:
-	1. AWS account
-	2. K8s cluster up and running in AWS 
-	3. VPC
-	4. ECR
+        1. AWS account
+        2. K8s cluster up and running in AWS 
+        3. VPC
+        4. ECR
 
 How to run the project:
 
